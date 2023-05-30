@@ -67,15 +67,23 @@ void init(registers_t *starting_registers)
 
 // TODO: create any necessary helper functions
 
-char *strsep(char **stringp, const char *delim) {
-    char *rv = *stringp;
-    if (rv) {
-        *stringp += strcspn(*stringp, delim);
-        if (**stringp)
-            *(*stringp)++ = '\0';
-        else
-            *stringp = 0; }
-    return rv;
+char *strsep(char **stringp, const char *delim)
+{
+    if (stringp == NULL || *stringp == NULL) {
+        return NULL;
+    }
+
+    char *start = *stringp;
+    char *end = strpbrk(start, delim);
+
+    if (end != NULL) {
+        *end = '\0';
+        *stringp = end + 1;
+    }
+    else {
+        *stringp = NULL;
+    }
+    return start;
 }
 
 int read_register(char* register_index) {
@@ -111,8 +119,16 @@ void step(char *instruction)
     // TODO: write logic for evaluating instruction on current interpreter state
     if (op_type == R_TYPE){
         char *rd = strsep(&instruction, ", ");
+
         char *rs1 = strsep(&instruction, ", ");
+        while (strcmp(rs1, "") == 0) {
+            rs1 = strsep(&instruction, ", ");
+        }
+
         char *rs2 = strsep(&instruction, ", ");
+        while (strcmp(rs2, "") == 0) {
+            rs2 = strsep(&instruction, ", ");
+        }
 
         int register1 = read_register(rs1);
         int register2 = read_register(rs2);
@@ -149,8 +165,16 @@ void step(char *instruction)
 
     if (op_type == I_TYPE){
         char *rd = strsep(&instruction, ", ");
+
         char *rs1 = strsep(&instruction, ", ");
+        while (strcmp(rs1, "") == 0) {
+            rs1 = strsep(&instruction, ", ");
+        }
+
         char *imm = strsep(&instruction, ", ");
+        while (strcmp(imm, "") == 0) {
+            imm = strsep(&instruction, ", ");
+        }
 
         int register1 = read_register(rs1);
         int immediate = atoi(imm);
@@ -174,34 +198,50 @@ void step(char *instruction)
     }
 
     if (op_type == MEM_TYPE){
-        char *rd = strsep(&instruction, ", ");
-        char *rs1 = strsep(&instruction, ", ");
-        char *imm = strsep(&instruction, ", ");
+        char *rd = strsep(&instruction, ", ()");
+        
+        char *imm = strsep(&instruction, ", ()");
+        while (strcmp(imm, "") == 0) {
+            imm = strsep(&instruction, ", ()");
+        }
 
+        char *rs1 = strsep(&instruction, ", ()");
+        while (strcmp(rs1, "") == 0) {
+            rs1 = strsep(&instruction, ", ()");
+        }
+        
         int register1 = read_register(rs1);
         int immediate = atoi(imm);
         int memory_address = register1 + immediate;
         if (strcmp(op, "lw") == 0) {
-            int result = ht_get(memory, memory_address);
+            int result = ht_get(memory, memory_address + 3);
+            result = (result << 8) + ht_get(memory, memory_address + 2);
+            result = (result << 8) + ht_get(memory, memory_address + 1);
+            result = (result << 8) + ht_get(memory, memory_address);
             write_register(rd, result);
         } else if (strcmp(op, "lb") == 0){
             int result = ht_get(memory, memory_address);
-            result = result & (0x000000FF) + (result & (0x00000080)) * (0xFFFFFF00);
+            result += ((result & (0x00000080))?1:0) * (0xffffff00);
             write_register(rd, result);
         } else if (strcmp(op, "sw") == 0){
             int result = read_register(rd);
-            ht_add(memory, memory_address, result);
+            ht_add(memory, memory_address, result & 0x000000ff);
+            ht_add(memory, memory_address + 1, (result & 0x0000ff00) >> 8);
+            ht_add(memory, memory_address + 2, (result & 0x00ff0000) >> 16);
+            ht_add(memory, memory_address + 3, (result & 0xff000000) >> 24);
         } else if (strcmp(op, "sb") == 0){
             int result = read_register(rd);
-            result = result & (0x000000FF) + (result & (0x00000080)) * (0xFFFFFF00);
-            ht_add(memory, memory_address, result);
+            ht_add(memory, memory_address, result & 0x000000ff);
         }
     }
 
     if (op_type == U_TYPE){
         char *rd = strsep(&instruction, ", ");
         char *imm = strsep(&instruction, ", ");
-        
+        while (strcmp(imm, "") == 0) {
+            imm = strsep(&instruction, ", ");
+        }
+
         int immediate = atoi(imm);
 
         int result = immediate << 12;
