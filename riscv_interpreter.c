@@ -12,16 +12,16 @@ int DEBUG = 0;
  * 
  */
 
-char *strsep(char **stringp, const char *delim) {
-    char *rv = *stringp;
-    if (rv) {
-        *stringp += strcspn(*stringp, delim);
-        if (**stringp)
-            *(*stringp)++ = '\0';
-        else
-            *stringp = 0; }
-    return rv;
-}
+// char *strsep(char **stringp, const char *delim) {
+//     char *rv = *stringp;
+//     if (rv) {
+//         *stringp += strcspn(*stringp, delim);
+//         if (**stringp)
+//             *(*stringp)++ = '\0';
+//         else
+//             *stringp = 0; }
+//     return rv;
+// }
 
 /**
  * Prints the values of the 32 registers to stderr, one per line.
