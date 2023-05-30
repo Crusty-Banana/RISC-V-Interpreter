@@ -57,14 +57,30 @@ static int get_op_type(char *op)
 
 registers_t *registers;
 // TODO: create any additional variables to store the state of the interpreter
-
+hashtable_t *memory;
 void init(registers_t *starting_registers)
 {
     registers = starting_registers;
     // TODO: initialize any additional variables needed for state
+    memory = ht_init(1024);
 }
 
 // TODO: create any necessary helper functions
+int read_register(char* register_index) {
+    int index = register_index[1] - '0';
+    if (strlen_s(register_index) == 3) {
+        index = index * 10 + register_index[2] - '0';
+    }
+    return registers->r[index];
+}
+
+void write_register(char* register_index, int value) {
+    int index = register_index[1] - '0';
+    if (strlen_s(register_index) == 3) {
+        index = index * 10 + register_index[2] - '0';
+    }
+    registers->r[index] = value;
+}
 
 void step(char *instruction)
 {
@@ -79,10 +95,104 @@ void step(char *instruction)
     if (op_type == UNKNOWN_TYPE)
     {
         return;
-    } else if (op_type == R_TYPE){
+    }
+    // TODO: write logic for evaluating instruction on current interpreter state
+    if (op_type == R_TYPE){
         char *rd = strsep(&instruction, ", ");
         char *rs1 = strsep(&instruction, ", ");
         char *rs2 = strsep(&instruction, ", ");
+
+        int register1 = read_register(rs1);
+        int register2 = read_register(rs2);
+
+        if (strcmp(op, "add") == 0) {
+            int result = register1 + register2;
+            write_register(rd, result);
+        } else if (strcmp(op, "sub") == 0){
+            int result = register1 - register2;
+            write_register(rd, result);
+        } else if (strcmp(op, "and") == 0){
+            int result = register1 & register2;
+            write_register(rd, result);
+        } else if (strcmp(op, "or") == 0){
+            int result = register1 | register2;
+            write_register(rd, result);
+        } else if (strcmp(op, "xor") == 0){
+            int result = register1 ^ register2;
+            write_register(rd, result);
+        } else if (strcmp(op, "nor") == 0){
+            int result = !(register1 | register2);
+            write_register(rd, result);
+        } else if (strcmp(op, "slt") == 0){
+            int result = (register1 < register2)?1:0;
+            write_register(rd, result);
+        } else if (strcmp(op, "sll") == 0){
+            int result = register1 << register2;
+            write_register(rd, result);
+        } else if (strcmp(op, "sla") == 0){
+            int result = register1 << register2;
+            write_register(rd, result);
+        }
     }
-    // TODO: write logic for evaluating instruction on current interpreter state
+
+    if (op_type == I_TYPE){
+        char *rd = strsep(&instruction, ", ");
+        char *rs1 = strsep(&instruction, ", ");
+        char *imm = strsep(&instruction, ", ");
+
+        int register1 = read_register(rs1);
+        int immediate = atoi(imm);
+
+        if (strcmp(op, "addi") == 0) {
+            int result = register1 + immediate;
+            write_register(rd, result);
+        } else if (strcmp(op, "andi") == 0){
+            int result = register1 & immediate;
+            write_register(rd, result);
+        } else if (strcmp(op, "ori") == 0){
+            int result = register1 | immediate;
+            write_register(rd, result);
+        } else if (strcmp(op, "xori") == 0){
+            int result = register1 ^ immediate;
+            write_register(rd, result);
+        } else if (strcmp(op, "slti") == 0){
+            int result = (register1 < immediate)?1:0;
+            write_register(rd, result);
+        }
+    }
+
+    if (op_type == MEM_TYPE){
+        char *rd = strsep(&instruction, ", ");
+        char *rs1 = strsep(&instruction, ", ");
+        char *imm = strsep(&instruction, ", ");
+
+        int register1 = read_register(rs1);
+        int immediate = atoi(imm);
+        int memory_address = register1 + immediate;
+        if (strcmp(op, "lw") == 0) {
+            int result = ht_get(memory, memory_address);
+            write_register(rd, result);
+        } else if (strcmp(op, "lb") == 0){
+            int result = ht_get(memory, memory_address);
+            result = result & (0x000000FF) + (result & (0x00000080)) * (0xFFFFFF00);
+            write_register(rd, result);
+        } else if (strcmp(op, "sw") == 0){
+            int result = read_register(rd);
+            ht_add(memory, memory_address, result);
+        } else if (strcmp(op, "sb") == 0){
+            int result = read_register(rd);
+            result = result & (0x000000FF) + (result & (0x00000080)) * (0xFFFFFF00);
+            ht_add(memory, memory_address, result);
+        }
+    }
+
+    if (op_type == U_TYPE){
+        char *rd = strsep(&instruction, ", ");
+        char *imm = strsep(&instruction, ", ");
+        
+        int immediate = atoi(imm);
+
+        int result = immediate << 12;
+        write_register(rd, result);
+    }
 }
