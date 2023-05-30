@@ -79,7 +79,10 @@ void step(char *instruction)
     if (op_type == UNKNOWN_TYPE)
     {
         return;
+    } else if (op_type == R_TYPE){
+        char *rd = strsep(&instruction, ", ");
+        char *rs1 = strsep(&instruction, ", ");
+        char *rs2 = strsep(&instruction, ", ");
     }
-
     // TODO: write logic for evaluating instruction on current interpreter state
 }
