@@ -68,7 +68,7 @@ void init(registers_t *starting_registers)
 // TODO: create any necessary helper functions
 int read_register(char* register_index) {
     int index = register_index[1] - '0';
-    if (strlen_s(register_index) == 3) {
+    if (strlen(register_index) == 3) {
         index = index * 10 + register_index[2] - '0';
     }
     return registers->r[index];
@@ -76,7 +76,7 @@ int read_register(char* register_index) {
 
 void write_register(char* register_index, int value) {
     int index = register_index[1] - '0';
-    if (strlen_s(register_index) == 3) {
+    if (strlen(register_index) == 3) {
         index = index * 10 + register_index[2] - '0';
     }
     registers->r[index] = value;
