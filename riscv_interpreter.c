@@ -7,6 +7,21 @@
 const char *COMMENT_START = "## start";
 const int BUFFER_SIZE = 256;
 int DEBUG = 0;
+/**
+ * add the function strsep for window user
+ * 
+ */
+
+// char *strsep(char **stringp, const char *delim) {
+//     char *rv = *stringp;
+//     if (rv) {
+//         *stringp += strcspn(*stringp, delim);
+//         if (**stringp)
+//             *(*stringp)++ = '\0';
+//         else
+//             *stringp = 0; }
+//     return rv;
+// }
 
 /**
  * Prints the values of the 32 registers to stderr, one per line.
@@ -24,6 +39,7 @@ void print_registers(registers_t *registers)
         fprintf(stderr, "r[%d] = 0x%x\n", i, registers->r[i]);
     }
 }
+
 
 /**
  * Converts all the characters to lowercase in the given string
