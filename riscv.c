@@ -66,6 +66,18 @@ void init(registers_t *starting_registers)
 }
 
 // TODO: create any necessary helper functions
+
+char *strsep(char **stringp, const char *delim) {
+    char *rv = *stringp;
+    if (rv) {
+        *stringp += strcspn(*stringp, delim);
+        if (**stringp)
+            *(*stringp)++ = '\0';
+        else
+            *stringp = 0; }
+    return rv;
+}
+
 int read_register(char* register_index) {
     int index = register_index[1] - '0';
     if (strlen(register_index) == 3) {
