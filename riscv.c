@@ -119,6 +119,9 @@ void step(char *instruction)
     // TODO: write logic for evaluating instruction on current interpreter state
     if (op_type == R_TYPE){
         char *rd = strsep(&instruction, ", ");
+        while (strcmp(rd, "") == 0) {
+            rd = strsep(&instruction, ", ");
+        }
 
         char *rs1 = strsep(&instruction, ", ");
         while (strcmp(rs1, "") == 0) {
@@ -165,7 +168,10 @@ void step(char *instruction)
 
     if (op_type == I_TYPE){
         char *rd = strsep(&instruction, ", ");
-
+        while (strcmp(rd, "") == 0) {
+            rd = strsep(&instruction, ", ");
+        }
+        
         char *rs1 = strsep(&instruction, ", ");
         while (strcmp(rs1, "") == 0) {
             rs1 = strsep(&instruction, ", ");
@@ -177,7 +183,7 @@ void step(char *instruction)
         }
 
         int register1 = read_register(rs1);
-        int immediate = atoi(imm);
+        int immediate = (int)strtol(imm, NULL, 0);
 
         if (strcmp(op, "addi") == 0) {
             int result = register1 + immediate;
@@ -199,7 +205,10 @@ void step(char *instruction)
 
     if (op_type == MEM_TYPE){
         char *rd = strsep(&instruction, ", ()");
-        
+        while (strcmp(rd, "") == 0) {
+            rd = strsep(&instruction, ", ");
+        }
+
         char *imm = strsep(&instruction, ", ()");
         while (strcmp(imm, "") == 0) {
             imm = strsep(&instruction, ", ()");
@@ -211,7 +220,7 @@ void step(char *instruction)
         }
         
         int register1 = read_register(rs1);
-        int immediate = atoi(imm);
+        int immediate = (int)strtol(imm, NULL, 0);
         int memory_address = register1 + immediate;
         if (strcmp(op, "lw") == 0) {
             int result = ht_get(memory, memory_address + 3);
@@ -237,14 +246,21 @@ void step(char *instruction)
 
     if (op_type == U_TYPE){
         char *rd = strsep(&instruction, ", ");
+        while (strcmp(rd, "") == 0) {
+            rd = strsep(&instruction, ", ");
+        }
+
         char *imm = strsep(&instruction, ", ");
         while (strcmp(imm, "") == 0) {
             imm = strsep(&instruction, ", ");
         }
 
-        int immediate = atoi(imm);
+        int immediate = (int)strtol(imm, NULL, 0);
 
         int result = immediate << 12;
         write_register(rd, result);
     }
+
+    // x0 always equals 0
+    write_register("x0", 0);
 }
