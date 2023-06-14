@@ -102,6 +102,12 @@ void write_register(char* register_index, int value) {
     registers->r[index] = value;
 }
 
+int sign_extended(int number) {
+    number = number << 20;
+    number = number >> 20;
+    return number;
+}
+
 void step(char *instruction)
 {
     // Extracts and returns the substring before the first space character,
@@ -160,8 +166,8 @@ void step(char *instruction)
         } else if (strcmp(op, "sll") == 0){
             int result = register1 << register2;
             write_register(rd, result);
-        } else if (strcmp(op, "sla") == 0){
-            int result = register1 << register2;
+        } else if (strcmp(op, "sra") == 0){
+            int result = register1 >> register2;
             write_register(rd, result);
         }
     }
@@ -184,6 +190,7 @@ void step(char *instruction)
 
         int register1 = read_register(rs1);
         int immediate = (int)strtol(imm, NULL, 0);
+        immediate = sign_extended(immediate);
 
         if (strcmp(op, "addi") == 0) {
             int result = register1 + immediate;
@@ -221,6 +228,8 @@ void step(char *instruction)
         
         int register1 = read_register(rs1);
         int immediate = (int)strtol(imm, NULL, 0);
+        immediate = sign_extended(immediate);
+
         int memory_address = register1 + immediate;
         if (strcmp(op, "lw") == 0) {
             int result = ht_get(memory, memory_address + 3);
